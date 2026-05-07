@@ -1,11 +1,9 @@
 from pathlib import Path
-from typing import Any
 
 import numpy as np
 import scanpy as sc
 import torch
 
-from scipy.sparse import issparse
 from torch.utils.data import Dataset
 
 
@@ -28,8 +26,13 @@ class WaddingtonDataset(Dataset):
 
         adata = sc.read_h5ad(path)
 
-        sc.pp.filter_genes(adata, min_cells=3)
-        sc.pp.normalize_total(adata, target_sum=1e4)
+        adata = adata[adata.obs["dpt_pseudotime"].argsort()].copy()
+
+        sc.pp.normalize_total(
+            adata,
+            target_sum=1e4,
+        )
+
         sc.pp.log1p(adata)
 
         sc.pp.highly_variable_genes(
@@ -38,12 +41,12 @@ class WaddingtonDataset(Dataset):
             subset=True,
         )
 
-        X: Any = adata.X
+        sc.pp.pca(
+            adata,
+            n_comps=n_pcs,
+        )
 
-        if issparse(X):
-            X = X.toarray()
-
-        X = np.asarray(X).astype(np.float32)
+        X = adata.obsm["X_pca"].astype(np.float32)
 
         self.X = torch.from_numpy(X)
 
@@ -52,22 +55,28 @@ class WaddingtonDataset(Dataset):
         if clusters.dtype.name == "category":
             clusters = clusters.cat.codes
 
-        clusters = np.asarray(clusters).astype(np.int64)
+        self.clusters = torch.from_numpy(clusters.values.astype(np.int64))
 
-        self.cluster_y = torch.from_numpy(clusters)
-
-        pseudotime = np.asarray(adata.obs["dpt_pseudotime"]).astype(np.float32)
-
-        self.pseudotime_y = torch.from_numpy(pseudotime)
-
-        self.n_genes = self.X.shape[1]
+        self.pseudotime = torch.from_numpy(
+            adata.obs["dpt_pseudotime"].values.astype(np.float32)
+        )
 
     def __len__(self):
-        return len(self.X)
+        return len(self.X) - self.block_size
 
     def __getitem__(self, index):
+
+        x_seq = self.X[index : index + self.block_size]
+
+        next_seq = self.X[index + 1 : index + self.block_size + 1]
+
+        cluster_seq = self.clusters[index : index + self.block_size]
+
+        pseudotime_seq = self.pseudotime[index : index + self.block_size]
+
         return {
-            "x": self.X[index],
-            "cluster_y": self.cluster_y[index],
-            "pseudotime_y": self.pseudotime_y[index],
+            "x": x_seq,
+            "next_state": next_seq,
+            "clusters": cluster_seq,
+            "pseudotime": pseudotime_seq,
         }

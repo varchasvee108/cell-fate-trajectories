@@ -16,6 +16,7 @@ class DataConfig(BaseModel):
     batch_size: int = Field(gt=0)
     block_size: int = Field(gt=0)
     num_workers: int = Field(ge=0)
+    input_cell_dim: int = Field(gt=0)
 
 
 class ModelConfig(BaseModel):
@@ -25,7 +26,6 @@ class ModelConfig(BaseModel):
     hidden_dim: int = Field(gt=0)
     n_layers: int = Field(gt=0)
     n_heads: int = Field(gt=0)
-    input_cell_dim: int = Field(gt=0)
     quantiles: tuple[float, float, float]
 
 
