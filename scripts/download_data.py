@@ -1,5 +1,4 @@
 import scvelo as scv
-import os
 from pathlib import Path
 
 
