@@ -40,12 +40,10 @@ tb_logs/
 # ======================================================
 # Data (Reproducible via scripts, not git)
 # ======================================================
-data/raw/*
-!data/raw/.gitkeep
 
-data/datasets/*
-data/splits/*
-!data/splits/.gitkeep
+data/*
+!data/.gitkeep
+
 data/cache/*
 outputs/*
 !outputs/**/.gitkeep
