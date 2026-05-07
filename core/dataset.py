@@ -1,47 +1,73 @@
 from pathlib import Path
-import torch
-from torch.utils.data import Dataset
+from typing import Any
+
 import numpy as np
 import scanpy as sc
-import scipy.sparse as sp
+import torch
+
+from scipy.sparse import issparse
+from torch.utils.data import Dataset
 
 
 class WaddingtonDataset(Dataset):
     def __init__(
-        self, file_path: str, block_size=128, n_pcs=50, target_col: str | None = None
+        self,
+        file_path: str,
+        block_size: int = 128,
+        n_pcs: int = 50,
     ):
         super().__init__()
+
         self.block_size = block_size
         self.n_pcs = n_pcs
-        if not Path(file_path).exists():
+
+        path = Path(file_path)
+
+        if not path.exists():
             raise FileNotFoundError(f"File not found at {file_path}")
-        adata = sc.read_h5ad(file_path)
+
+        adata = sc.read_h5ad(path)
 
         sc.pp.filter_genes(adata, min_cells=3)
         sc.pp.normalize_total(adata, target_sum=1e4)
         sc.pp.log1p(adata)
 
-        sc.pp.highly_variable_genes(adata, n_top_genes=2000, subset=True)
+        sc.pp.highly_variable_genes(
+            adata,
+            n_top_genes=2000,
+            subset=True,
+        )
 
-        X = np.asarray(adata.X)
+        X: Any = adata.X
 
-        self.X = torch.tensor(X, dtype=torch.float32)
+        if issparse(X):
+            X = X.toarray()
 
-        if target_col is not None and target_col in adata.obs:
-            y = adata.obs[target_col]
+        X = np.asarray(X).astype(np.float32)
 
-            if y.dtype.name == "category":
-                y = y.cat.codes
+        self.X = torch.from_numpy(X)
 
-            self.y = torch.tensor(y.values, dtype=torch.float32)
-        self.adata = adata
+        clusters = adata.obs["clusters"]
+
+        if clusters.dtype.name == "category":
+            clusters = clusters.cat.codes
+
+        clusters = np.asarray(clusters).astype(np.int64)
+
+        self.cluster_y = torch.from_numpy(clusters)
+
+        pseudotime = np.asarray(adata.obs["dpt_pseudotime"]).astype(np.float32)
+
+        self.pseudotime_y = torch.from_numpy(pseudotime)
+
         self.n_genes = self.X.shape[1]
 
     def __len__(self):
         return len(self.X)
 
     def __getitem__(self, index):
-        x = self.X[index]
-        y = self.y[index]
-
-        return x, y
+        return {
+            "x": self.X[index],
+            "cluster_y": self.cluster_y[index],
+            "pseudotime_y": self.pseudotime_y[index],
+        }

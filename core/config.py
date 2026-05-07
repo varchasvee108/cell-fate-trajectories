@@ -1,7 +1,6 @@
 from pathlib import Path
 import tomllib
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Literal
 
 
 class ProjectConfig(BaseModel):
