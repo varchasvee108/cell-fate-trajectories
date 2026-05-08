@@ -63,7 +63,7 @@ def build_trainer(config: Config):
     device = get_device()
 
     dataset = WaddingtonDataset(
-        file_path=config.data.dataset,
+        file_path="data/pancreas.h5ad",
         block_size=config.data.block_size,
         n_pcs=config.data.input_cell_dim,
     )

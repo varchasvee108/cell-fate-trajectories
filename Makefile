@@ -1,7 +1,7 @@
 .PHONY: train infer
 
 train:
-	python scripts/train.py
+	python -m scripts.train
 
 infer:
-	python scripts/infer.py
+	python -m scripts.infer

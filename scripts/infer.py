@@ -15,11 +15,11 @@ def main():
     device = get_device()
 
     dataset = WaddingtonDataset(
-        file_path=config.data.dataset,
+        file_path="data/pancreas.h5ad",
         block_size=config.data.block_size,
         n_pcs=config.data.input_cell_dim,
     )
-    model = WaddingtonModel(config, n_clusters=dataset.n_clusters)
+    model = WaddingtonModel(config, n_clusters=dataset.n_clusters).to(device)
 
     dataloader = DataLoader(
         dataset,

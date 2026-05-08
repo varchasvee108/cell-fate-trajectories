@@ -41,7 +41,7 @@ class TransformerBlock(nn.Module):
             nhead=config.model.n_heads,
             dim_feedforward=config.model.hidden_dim,
             dropout=config.model.dropout,
-            activation="silu",
+            activation="gelu",
             batch_first=True,
             norm_first=True,
         )
