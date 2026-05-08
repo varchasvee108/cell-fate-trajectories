@@ -61,6 +61,8 @@ class WaddingtonDataset(Dataset):
             adata.obs["dpt_pseudotime"].values.astype(np.float32)
         )
 
+        self.n_clusters = len(np.unique(clusters))
+
     def __len__(self):
         return len(self.X) - self.block_size
 
