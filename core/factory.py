@@ -89,6 +89,7 @@ def build_trainer(config: Config):
         shuffle=True,
         num_workers=config.data.num_workers,
         pin_memory=pin_memory,
+        persistent_workers=True if config.data.num_workers > 0 else False,
     )
     val_loader = DataLoader(
         val_ds,
@@ -96,6 +97,7 @@ def build_trainer(config: Config):
         shuffle=False,
         num_workers=config.data.num_workers,
         pin_memory=pin_memory,
+        persistent_workers=True if config.data.num_workers > 0 else False,
     )
 
     model = build_model(config, device)
