@@ -8,6 +8,7 @@ dataset =''
 batch_size = 32
 block_size = 256
 num_workers = 4
+input_cell_dim = 50
 
 [model]
 n_embd = 128
@@ -15,7 +16,6 @@ dropout = 0.1
 hidden_dim=512
 n_layers = 6
 n_heads = 4
-input_cell_dim = 50
 quantiles = [0.1, 0.5, 0.9]
 
 [training]
