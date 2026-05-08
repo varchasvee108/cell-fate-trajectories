@@ -7,6 +7,7 @@ from transformers import get_scheduler as _hf_get_scheduler  # type: ignore
 from core.config import Config
 from model.model import WaddingtonModel
 from trainer.trainer import Trainer
+from core.dataset import WaddingtonDataset
 
 
 def get_device():
@@ -57,22 +58,16 @@ def get_scheduler(
     )
 
 
-def build_model(config: Config, device: torch.device):
-    model = WaddingtonModel(config=config, n_clusters=3).to(device)
-    return model
-
-
 def build_trainer(config: Config):
     set_seed(config.project.seed)
     device = get_device()
-
-    from core.dataset import WaddingtonDataset
 
     dataset = WaddingtonDataset(
         file_path=config.data.dataset,
         block_size=config.data.block_size,
         n_pcs=config.data.input_cell_dim,
     )
+    model = WaddingtonModel(config=config, n_clusters=dataset.n_clusters).to(device)
 
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
@@ -100,7 +95,6 @@ def build_trainer(config: Config):
         persistent_workers=True if config.data.num_workers > 0 else False,
     )
 
-    model = build_model(config, device)
     optimizer = get_optimizer(model, config)
 
     steps_per_epoch = len(train_loader) // config.training.grad_accum_steps
