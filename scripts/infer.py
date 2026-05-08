@@ -2,10 +2,12 @@ import torch
 from pathlib import Path
 
 from core.config import Config
-from core.factory import get_device, build_model
+from core.factory import get_device
 from core.dataset import WaddingtonDataset
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+
+from model.model import WaddingtonModel
 
 
 def main():
@@ -17,6 +19,7 @@ def main():
         block_size=config.data.block_size,
         n_pcs=config.data.input_cell_dim,
     )
+    model = WaddingtonModel(config, n_clusters=dataset.n_clusters)
 
     dataloader = DataLoader(
         dataset,
@@ -25,8 +28,6 @@ def main():
         num_workers=config.data.num_workers,
         pin_memory=(device.type == "cuda"),
     )
-
-    model = build_model(config, device)
 
     checkpoint_path = Path("checkpoints/best.pt")
     if not checkpoint_path.exists():
