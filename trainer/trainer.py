@@ -1,9 +1,8 @@
 import torch
-import wandb  # type: ignore
-
+import wandb
 from core.config import Config
 from model.model import WaddingtonModel
-from torch.amp import GradScaler, autocast  # type: ignore
+from torch.amp import GradScaler, autocast  # type:ignore
 from pathlib import Path
 from tqdm import tqdm
 
@@ -154,7 +153,6 @@ class Trainer:
             },
             path,
         )
-        wandb.save(str(path))
 
     def load_checkpoint(self, path: str | Path) -> int:
         path = Path(path)
