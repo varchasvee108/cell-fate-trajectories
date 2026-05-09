@@ -17,6 +17,8 @@ hidden_dim=512
 n_layers = 6
 n_heads = 4
 quantiles = [0.1, 0.5, 0.9]
+n_clusters = 8
+
 
 [training]
 lr = 5e-4
@@ -28,7 +30,7 @@ eval_interval = 500
 save_interval =500
 grad_accum_steps = 4
 max_steps = 50000
-epochs=6
-warmup_steps = 1000
-decay_steps = 1000
+epochs=50
+warmup_steps = 100
+decay_steps = 100
 
