@@ -20,11 +20,9 @@ class WaddingtonModel(nn.Module):
         super().__init__()
 
         self.config = config
-
         self.cell_projection = CellProjection(config)
-
         self.time_embeddings = PositionalEncoding(config)
-
+        self.dropout = nn.Dropout(config.model.dropout)
         self.transformer = TransformerBlock(config)
 
         self.cluster_head = ClusterHead(
@@ -34,54 +32,27 @@ class WaddingtonModel(nn.Module):
 
         self.quantile_head = QuantileHead(config)
 
-    def generate_causal_mask(
-        self,
-        seq_len: int,
-        device,
-    ):
-
+    def generate_causal_mask(self, seq_len, device):
         mask = torch.triu(
-            torch.ones(
-                seq_len,
-                seq_len,
-                device=device,
-            ),
+            torch.ones(seq_len, seq_len, device=device),
             diagonal=1,
         )
-
-        mask = mask.masked_fill(
-            mask == 1,
-            float("-inf"),
-        )
-
+        mask = mask.masked_fill(mask == 1, float("-inf"))
         return mask
 
-    def forward(
-        self,
-        x,
-        pseudotime,
-    ):
-
+    def forward(self, x, pseudotime):
         seq_len = x.shape[1]
 
         x = self.cell_projection(x)
-
         time_emb = self.time_embeddings(pseudotime)
 
-        x = x + time_emb
+        x = self.dropout(x + time_emb)
 
-        causal_mask = self.generate_causal_mask(
-            seq_len=seq_len,
-            device=x.device,
-        )
+        causal_mask = self.generate_causal_mask(seq_len, x.device)
 
-        x = self.transformer(
-            x,
-            mask=causal_mask,
-        )
+        x = self.transformer(x, mask=causal_mask)
 
         cluster_logits = self.cluster_head(x)
-
         quantile_preds = self.quantile_head(x)
 
         return {
