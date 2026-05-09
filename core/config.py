@@ -27,6 +27,7 @@ class ModelConfig(BaseModel):
     n_layers: int = Field(gt=0)
     n_heads: int = Field(gt=0)
     quantiles: tuple[float, float, float]
+    n_clusters: int = Field(gt=0)
 
 
 class TrainingConfig(BaseModel):
