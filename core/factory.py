@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-
 from torch.utils.data import DataLoader, random_split
 from transformers import get_scheduler as _hf_get_scheduler  # type: ignore
 
@@ -67,7 +66,10 @@ def build_trainer(config: Config):
         block_size=config.data.block_size,
         n_pcs=config.data.input_cell_dim,
     )
-    model = WaddingtonModel(config=config, n_clusters=dataset.n_clusters).to(device)
+
+    model = WaddingtonModel(config=config, n_clusters=config.model.n_clusters).to(
+        device
+    )
 
     train_size = int(0.8 * len(dataset))
     val_size = len(dataset) - train_size
