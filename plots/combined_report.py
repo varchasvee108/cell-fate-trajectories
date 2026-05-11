@@ -3,6 +3,7 @@ import numpy as np
 from pathlib import Path
 from matplotlib.gridspec import GridSpec
 
+
 def plot_combined(
     pca: np.ndarray,
     pseudotime: np.ndarray,

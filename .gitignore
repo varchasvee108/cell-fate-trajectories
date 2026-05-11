@@ -43,6 +43,7 @@ tb_logs/
 
 data/*
 !data/.gitkeep
+scripts/*
 
 data/cache/*
 outputs/*
